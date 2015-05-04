@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  
+  
+  
+  <style>
+  
+  </style>
+
+</head>
+
+<body>
+ <div id="holder">
+  <form>
+    Search Movie: <input type="text" id="movieName" name="search" placeholder="input movie name"> 
+    <button type="button" id="Submit">Submit</button>
+    
+    <br>
+    <h1>Results:</h1>
+    <div id="list">
+
+    <ul>
+      
+    </ul>
+
+    </div>
+  </form>
+ </div>
+
+ <script type="text/template" id="movieTemplate">
+
+  <%= Title + ": " + Year %>
+
+ </script>
+ <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+ <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+ <script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
+ 
+ <script> 
+
+
+   // var movieName = $('#movieName');
+
+  
+   // $("#Submit").click(function(){
+   //    //http://www.omdbapi.com/?s=terminator
+   //    var searchstring = $('#movieName');
+   //    var url = 'http://www.omdbapi.com/?s='+ searchstring;
+      
+   //    $.get(url).done (function(res){
+   //      var results = res.Search;
+   //      results.forEach(printMovie);
+   //    });
+      
+   //    //searchstring.focus();
+   //    //alert(searchstring.val());
+   // });
+
+   // function printMovie(movie) {
+   //    console.log(movie);
+   //    //prints last one only
+   //    $("ul").append( "<li>" + movie["Title"] + ": " + movie["Year"] + "</li>");
+   // }
+
+//View is acting as the controller. Marionette has a controller object if you want to get into that
+//eloquent javascript, effective javascript, then Secrets JavaScript ("binding", "this"), the principles of Object oriented javascript
+
+
+   var MainView = Backbone.View.extend({
+      
+      el: "body",
+
+      events: {
+        "click #Submit": "search"
+      },
+
+      initialize: function() {
+        this.movieCollection = new MovieCollection();
+      },
+
+      search: function(){
+        var searchstring = $('#movieName').val();
+        var url = 'http://www.omdbapi.com/?s='+ searchstring;
+        
+        $.get(url).done (function(res){
+          this.movieCollection.reset(res.Search); //created models for each of the objects, check doc reset in backbone
+          this.printMovies();
+        }.bind(this)); //binds to anonymous function
+      },
+
+      printMovies: function() {
+        this.movieCollection.forEach(function(movieModel) {
+          var movieView = new MovieView({ model: movieModel });
+          this.$("ul").append( movieView.render().el );
+        }.bind(this));
+      }
+
+   });
+
+   var MovieView = Backbone.View.extend({
+
+      tagname: "li",
+
+      initialize: function() {
+        this.template = _.template( $("#movieTemplate").html().trim() );
+      },
+
+      render: function() {
+        this.$el.html( this.template( this.model.toJSON() ) ); //toJSON gives you all the key value pairs 
+
+        return this;
+      }
+
+   });
+
+
+   var MovieModel = Backbone.Model.extend({}); 
+
+   var MovieCollection = Backbone.Collection.extend({
+     model: MovieModel
+   });
+
+
+
+   var mainview = new MainView();
+
+
+ </script>
+
+</body>
+</html>
